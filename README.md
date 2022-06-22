@@ -5,7 +5,7 @@
 
 The system has moduled structure, including api, service and data layers.
 
-###Technologies
+### Technologies
 - Written in Kotlin + Spring Boot
 - Relational data storing 
 - Swagger for API documentation 
