@@ -1,5 +1,6 @@
 package ru.andersen.practicetest.services
 
+import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import ru.andersen.practicetest.dto.account.CreateAccountResponse
 import ru.andersen.practicetest.models.Account
@@ -18,8 +19,7 @@ class AccountService(
     private val transactionsRepository: TransactionsRepository
 ) {
 
-    //todo: add logging
-    //todo: scripts for filling in the db
+    private val log = LoggerFactory.getLogger(AccountService::class.java)
 
     fun fetchAll(): List<Account> = accountsRepository.findAll()
 
@@ -27,6 +27,7 @@ class AccountService(
 
     fun create(userName: String, pinCode: String): CreateAccountResponse {
         if (accountsRepository.existsAccountByUser_NameAndPinCode(userName, pinCode)) {
+            log.info("Error in account creation: account already exists")
             return CreateAccountResponse.AccountAlreadyExists
         }
 
@@ -34,6 +35,7 @@ class AccountService(
         if (user == null) {
             user = User(name = userName)
             usersRepository.save(user)
+            log.info("New user created $user")
         }
 
         val account = Account(
@@ -42,6 +44,7 @@ class AccountService(
             createdAt = Instant.now()
         )
         accountsRepository.save(account)
+        log.info("New account created $account")
         return CreateAccountResponse.Ok
     }
 

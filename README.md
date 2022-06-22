@@ -39,7 +39,7 @@ created_at
 ### Operations:  
 
 - GET **/api/account/fetch-all** - get all accounts
-- GET **/api/account/{account-id}/transactions** - get all transaction's history for specific account
+- GET **/api/account/{account-id}/transactions** - get all transaction's history for specific account (history is kept only for succeeded transactions)
 - POST **/api/account/create** - create account
 - POST **/api/transaction/deposit** - deposit money into account
 - POST **/api/transaction/withdraw** - withdraw money 

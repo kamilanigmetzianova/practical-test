@@ -1,5 +1,6 @@
 package ru.andersen.practicetest.services
 
+import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import ru.andersen.practicetest.dto.transaction.DepositMoneyResponse
 import ru.andersen.practicetest.dto.transaction.TransferMoneyResponse
@@ -20,10 +21,15 @@ class TransactionService(
     private val transactionsRepository: TransactionsRepository,
 ) {
 
+    private val log = LoggerFactory.getLogger(TransactionService::class.java)
+
     @Transactional
     fun deposit(accountId: Long, pinCode: String, amount: BigDecimal): DepositMoneyResponse {
         val account = accountsRepository.findAccountByIdAndPinCode(accountId, pinCode.sha256())
-            ?: return DepositMoneyResponse.AccessDenied
+            ?: run {
+                log.info("Pin code is invalid")
+                return DepositMoneyResponse.AccessDenied
+            }
 
         val updatedBalance = account.balance + amount
 
@@ -36,10 +42,15 @@ class TransactionService(
     @Transactional
     fun withdraw(accountId: Long, pinCode: String, amount: BigDecimal): WithdrawMoneyResponse {
         val account = accountsRepository.findAccountByIdAndPinCode(accountId, pinCode.sha256())
-            ?: return WithdrawMoneyResponse.AccessDenied
+            ?: run {
+                log.info("Pin code is invalid")
+                return WithdrawMoneyResponse.AccessDenied
+            }
 
-        if (account.balance < amount)
+        if (account.balance < amount) {
+            log.info("Insufficient funds in the account")
             return WithdrawMoneyResponse.InsufficientFunds
+        }
 
         val updatedBalance = account.balance - amount
 
@@ -52,18 +63,26 @@ class TransactionService(
     @Transactional
     fun transfer(
         senderAccountId: Long,
-        receiverAccountId: Long,
+        recipientAccountId: Long,
         pinCode: String,
         amount: BigDecimal
     ): TransferMoneyResponse {
         val senderAccount = accountsRepository.findAccountByIdAndPinCode(senderAccountId, pinCode.sha256())
-            ?: return TransferMoneyResponse.AccessDenied
+            ?: run {
+                log.info("Pin code is invalid")
+                return TransferMoneyResponse.AccessDenied
+            }
 
-        val recipientAccount = accountsRepository.findById(receiverAccountId).orElse(null)
-            ?: return TransferMoneyResponse.RecipientNotFound
+        val recipientAccount = accountsRepository.findById(recipientAccountId).orElse(null)
+            ?: run {
+                log.info("Recipient with id=$recipientAccountId is not found")
+                return TransferMoneyResponse.RecipientNotFound
+            }
 
-        if (senderAccount.balance < amount)
+        if (senderAccount.balance < amount) {
+            log.info("Insufficient funds in the account")
             return TransferMoneyResponse.InsufficientFunds
+        }
 
         val senderBalance = recipientAccount.balance - amount
         val recipientBalance = recipientAccount.balance + amount
@@ -77,7 +96,7 @@ class TransactionService(
         return TransferMoneyResponse.Ok
     }
 
-    private fun saveTransaction(account: Account, type: OperationType, updatedBalance: BigDecimal){
+    private fun saveTransaction(account: Account, type: OperationType, updatedBalance: BigDecimal) {
         val transaction = Transaction(
             account = account,
             type = type,
@@ -86,5 +105,6 @@ class TransactionService(
             createdAt = Instant.now()
         )
         transactionsRepository.save(transaction)
+        log.info("New transaction saved $transaction")
     }
 }
