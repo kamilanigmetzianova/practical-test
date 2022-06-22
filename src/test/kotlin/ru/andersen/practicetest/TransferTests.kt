@@ -43,14 +43,14 @@ class TransferTests {
         account = senderAccount,
         type = OperationType.TRANSFER,
         balanceBefore = senderAccount.balance,
-        balanceAfter = senderAccount.balance.subtract(transferAmount),
+        balanceAfter = senderAccount.balance - transferAmount,
         createdAt = Instant.now()
     )
     private val recipientTransaction = Transaction(
         account = recipientAccount,
         type = OperationType.DEPOSIT,
         balanceBefore = recipientAccount.balance,
-        balanceAfter = recipientAccount.balance.add(transferAmount),
+        balanceAfter = recipientAccount.balance + transferAmount,
         createdAt = Instant.now()
     )
 
@@ -61,8 +61,8 @@ class TransferTests {
     @Test
     fun `transferred money successfully`() {
         //given
-        val updatedSender = senderAccount.copy(balance = senderAccount.balance.subtract(transferAmount))
-        val updatedRecipient = recipientAccount.copy(balance = recipientAccount.balance.add(transferAmount))
+        val updatedSender = senderAccount.copy(balance = senderAccount.balance - transferAmount)
+        val updatedRecipient = recipientAccount.copy(balance = recipientAccount.balance + transferAmount)
 
         every { accountsRepository.findAccountByIdAndPinCode(senderAccount.id, senderPinCodeHash) } returns senderAccount
         every { accountsRepository.findById(recipientAccount.id) } returns Optional.of(recipientAccount)

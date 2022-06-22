@@ -4,6 +4,7 @@ import org.springframework.stereotype.Service
 import ru.andersen.practicetest.dto.transaction.DepositMoneyResponse
 import ru.andersen.practicetest.dto.transaction.TransferMoneyResponse
 import ru.andersen.practicetest.dto.transaction.WithdrawMoneyResponse
+import ru.andersen.practicetest.models.Account
 import ru.andersen.practicetest.models.OperationType
 import ru.andersen.practicetest.models.Transaction
 import ru.andersen.practicetest.models.sha256
@@ -24,18 +25,11 @@ class TransactionService(
         val account = accountsRepository.findAccountByIdAndPinCode(accountId, pinCode.sha256())
             ?: return DepositMoneyResponse.AccessDenied
 
-        val updatedBalance = account.balance.add(amount)
-
-        val transaction = Transaction(
-            account = account,
-            type = OperationType.DEPOSIT,
-            balanceBefore = account.balance,
-            balanceAfter = updatedBalance,
-            createdAt = Instant.now()
-        )
+        val updatedBalance = account.balance + amount
 
         accountsRepository.save(account.copy(balance = updatedBalance))
-        transactionsRepository.save(transaction)
+        saveTransaction(account, OperationType.DEPOSIT, updatedBalance)
+
         return DepositMoneyResponse.Ok
     }
 
@@ -47,18 +41,11 @@ class TransactionService(
         if (account.balance < amount)
             return WithdrawMoneyResponse.InsufficientFunds
 
-        val updatedBalance = account.balance.subtract(amount)
-
-        val transaction = Transaction(
-            account = account,
-            type = OperationType.WITHDRAW,
-            balanceBefore = account.balance,
-            balanceAfter = updatedBalance,
-            createdAt = Instant.now()
-        )
+        val updatedBalance = account.balance - amount
 
         accountsRepository.save(account.copy(balance = updatedBalance))
-        transactionsRepository.save(transaction)
+        saveTransaction(account, OperationType.WITHDRAW, updatedBalance)
+
         return WithdrawMoneyResponse.Ok
     }
 
@@ -78,29 +65,26 @@ class TransactionService(
         if (senderAccount.balance < amount)
             return TransferMoneyResponse.InsufficientFunds
 
-        val senderBalance = recipientAccount.balance.subtract(amount)
-        val recipientBalance = recipientAccount.balance.add(amount)
+        val senderBalance = recipientAccount.balance - amount
+        val recipientBalance = recipientAccount.balance + amount
 
-        val senderTransaction = Transaction(
-            account = senderAccount,
-            type = OperationType.TRANSFER,
-            balanceBefore = senderAccount.balance,
-            balanceAfter = senderBalance,
-            createdAt = Instant.now()
-        )
         accountsRepository.save(senderAccount.copy(balance = senderBalance))
-        transactionsRepository.save(senderTransaction)
+        saveTransaction(senderAccount, OperationType.TRANSFER, senderBalance)
 
-        val recipientTransaction = Transaction(
-            account = recipientAccount,
-            type = OperationType.DEPOSIT,
-            balanceBefore = recipientAccount.balance,
-            balanceAfter = recipientBalance,
-            createdAt = Instant.now()
-        )
         accountsRepository.save(recipientAccount.copy(balance = recipientBalance))
-        transactionsRepository.save(recipientTransaction)
+        saveTransaction(recipientAccount, OperationType.DEPOSIT, recipientBalance)
 
         return TransferMoneyResponse.Ok
+    }
+
+    private fun saveTransaction(account: Account, type: OperationType, updatedBalance: BigDecimal){
+        val transaction = Transaction(
+            account = account,
+            type = type,
+            balanceBefore = account.balance,
+            balanceAfter = updatedBalance,
+            createdAt = Instant.now()
+        )
+        transactionsRepository.save(transaction)
     }
 }

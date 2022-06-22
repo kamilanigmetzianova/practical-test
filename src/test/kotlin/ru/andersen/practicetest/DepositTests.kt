@@ -35,7 +35,7 @@ class DepositTests {
         account = account,
         type = OperationType.DEPOSIT,
         balanceBefore = balance,
-        balanceAfter = balance.add(depositAmount),
+        balanceAfter = balance + depositAmount,
         createdAt = Instant.now()
     )
 
@@ -47,7 +47,7 @@ class DepositTests {
     fun `deposited money successfully`() {
         //given
         every { accountsRepository.findAccountByIdAndPinCode(accountId, pinCodeHash) } returns account
-        every { accountsRepository.save(any()) } returns account.copy(balance = balance.add(depositAmount))
+        every { accountsRepository.save(any()) } returns account.copy(balance = balance + depositAmount)
         every { transactionsRepository.save(any()) } returns transaction
 
         //when

@@ -34,7 +34,7 @@ class WithdrawTests {
         account = account,
         type = OperationType.WITHDRAW,
         balanceBefore = balance,
-        balanceAfter = balance.subtract(withdrawAmount),
+        balanceAfter = balance - withdrawAmount,
         createdAt = Instant.now()
     )
 
@@ -46,7 +46,7 @@ class WithdrawTests {
     fun `withdrawn money successfully`() {
         //given
         every { accountsRepository.findAccountByIdAndPinCode(accountId, pinCode.sha256()) } returns account
-        every { accountsRepository.save(any()) } returns account.copy(balance = balance.subtract(withdrawAmount))
+        every { accountsRepository.save(any()) } returns account.copy(balance = balance - withdrawAmount)
         every { transactionsRepository.save(any()) } returns transaction
 
         //when
