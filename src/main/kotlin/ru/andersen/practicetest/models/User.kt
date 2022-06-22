@@ -1,26 +1,20 @@
 package ru.andersen.practicetest.models
 
-import java.math.BigDecimal
-import java.time.Instant
 import javax.persistence.CascadeType
 import javax.persistence.Entity
 import javax.persistence.FetchType
 import javax.persistence.GeneratedValue
 import javax.persistence.GenerationType
 import javax.persistence.Id
-import javax.persistence.ManyToOne
 import javax.persistence.OneToMany
+import javax.persistence.UniqueConstraint
 
 @Entity
-data class Account(
+data class User(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     val id: Long = 0,
-    @ManyToOne
-    val user: User,
-    val pinCode: String,
-    val balance: BigDecimal = BigDecimal(0),
-    val createdAt: Instant,
-    @OneToMany(mappedBy = "account", cascade = [CascadeType.ALL], fetch = FetchType.LAZY)
-    val transactions: List<Transaction>? = null
+    val name: String,
+    @OneToMany(mappedBy = "user", cascade = [CascadeType.ALL], fetch = FetchType.LAZY)
+    val accounts: List<Account>? = null,
 )

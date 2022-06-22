@@ -8,6 +8,7 @@ import ru.andersen.practicetest.dto.transaction.TransferMoneyResponse
 import ru.andersen.practicetest.models.Account
 import ru.andersen.practicetest.models.OperationType
 import ru.andersen.practicetest.models.Transaction
+import ru.andersen.practicetest.models.User
 import ru.andersen.practicetest.repositories.AccountsRepository
 import ru.andersen.practicetest.repositories.TransactionsRepository
 import ru.andersen.practicetest.services.TransactionService
@@ -19,14 +20,14 @@ class TransferTests {
 
     private val senderAccount = Account(
         id = 1L,
-        customerName = "Sender",
+        user = User(name = "Sender"),
         pinCode = "0000",
         balance = BigDecimal(100),
         createdAt = Instant.now()
     )
     private val recipientAccount = Account(
         id = 2L,
-        customerName = "Recipient",
+        user = User(name = "Recipient"),
         pinCode = "1111",
         balance = BigDecimal(100),
         createdAt = Instant.now()

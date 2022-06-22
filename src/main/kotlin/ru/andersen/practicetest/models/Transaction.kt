@@ -12,7 +12,7 @@ import javax.persistence.ManyToOne
 data class Transaction(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    val id: Long = 0, //or UUID
+    val id: Long = 0,
     @ManyToOne
     val account: Account,
     val type: OperationType,

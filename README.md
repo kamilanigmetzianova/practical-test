@@ -16,9 +16,14 @@ The system has moduled structure, including api, service and data layers.
 
 ### Database:
 
+**users**  
+id  
+name
+
 **accounts**  
 id  
-customer_name  
+account_number  
+user  
 pin_code
 balance  
 created_at

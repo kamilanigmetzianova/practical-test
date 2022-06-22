@@ -5,7 +5,7 @@ import javax.validation.constraints.NotNull
 
 data class CreateAccountRequest(
     @get:NotNull
-    val customerName: String?,
+    val userName: String?,
 
     @get:NotNull
     @get:PinCode

@@ -8,6 +8,7 @@ import ru.andersen.practicetest.dto.transaction.WithdrawMoneyResponse
 import ru.andersen.practicetest.models.Account
 import ru.andersen.practicetest.models.OperationType
 import ru.andersen.practicetest.models.Transaction
+import ru.andersen.practicetest.models.User
 import ru.andersen.practicetest.repositories.AccountsRepository
 import ru.andersen.practicetest.repositories.TransactionsRepository
 import ru.andersen.practicetest.services.TransactionService
@@ -17,12 +18,12 @@ import java.time.Instant
 class WithdrawTests {
 
     private val accountId = 1L
-    private val customerName = "Test"
+    private val userName = "Test"
     private val pinCode = "0000"
     private val balance = BigDecimal(100)
     private val account = Account(
         id = accountId,
-        customerName = customerName,
+        user = User(name = userName),
         pinCode = pinCode,
         balance = balance,
         createdAt = Instant.now()

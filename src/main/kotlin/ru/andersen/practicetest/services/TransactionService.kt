@@ -10,6 +10,7 @@ import ru.andersen.practicetest.repositories.AccountsRepository
 import ru.andersen.practicetest.repositories.TransactionsRepository
 import java.math.BigDecimal
 import java.time.Instant
+import javax.transaction.Transactional
 
 @Service
 class TransactionService(
@@ -17,6 +18,7 @@ class TransactionService(
     private val transactionsRepository: TransactionsRepository,
 ) {
 
+    @Transactional
     fun deposit(accountId: Long, pinCode: String, amount: BigDecimal): DepositMoneyResponse {
         val account = accountsRepository.findAccountByIdAndPinCode(accountId, pinCode)
             ?: return DepositMoneyResponse.AccessDenied
@@ -36,6 +38,7 @@ class TransactionService(
         return DepositMoneyResponse.Ok
     }
 
+    @Transactional
     fun withdraw(accountId: Long, pinCode: String, amount: BigDecimal): WithdrawMoneyResponse {
         val account = accountsRepository.findAccountByIdAndPinCode(accountId, pinCode)
             ?: return WithdrawMoneyResponse.AccessDenied
@@ -58,6 +61,7 @@ class TransactionService(
         return WithdrawMoneyResponse.Ok
     }
 
+    @Transactional
     fun transfer(
         senderAccountId: Long,
         receiverAccountId: Long,

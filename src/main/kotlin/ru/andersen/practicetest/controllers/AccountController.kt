@@ -31,7 +31,7 @@ class AccountController(private val accountService: AccountService) {
         ]
     )
     fun fetchAll(): ResponseEntity<List<AccountInfo>> {
-        val list = accountService.fetchAll().map { AccountInfo(it.customerName, it.balance) }
+        val list = accountService.fetchAll().map { AccountInfo(it.user.name, it.balance) }
         return ResponseEntity.ok(list)
     }
 
@@ -59,7 +59,7 @@ class AccountController(private val accountService: AccountService) {
         ]
     )
     fun create(@Valid @RequestBody request: CreateAccountRequest): ResponseEntity<Unit> {
-        return when (accountService.create(request.customerName!!, request.pinCode!!)) {
+        return when (accountService.create(request.userName!!, request.pinCode!!)) {
             CreateAccountResponse.Ok -> ResponseEntity.ok().build()
             CreateAccountResponse.AccountAlreadyExists -> ResponseEntity.status(HttpStatus.CONFLICT).build()
         }

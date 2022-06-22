@@ -4,12 +4,15 @@ import org.springframework.stereotype.Service
 import ru.andersen.practicetest.dto.account.CreateAccountResponse
 import ru.andersen.practicetest.models.Account
 import ru.andersen.practicetest.models.Transaction
+import ru.andersen.practicetest.models.User
 import ru.andersen.practicetest.repositories.AccountsRepository
 import ru.andersen.practicetest.repositories.TransactionsRepository
+import ru.andersen.practicetest.repositories.UsersRepository
 import java.time.Instant
 
 @Service
 class AccountService(
+    private val usersRepository: UsersRepository,
     private val accountsRepository: AccountsRepository,
     private val transactionsRepository: TransactionsRepository
 ) {
@@ -21,13 +24,19 @@ class AccountService(
 
     fun fetchTransactions(accountId: Long): List<Transaction> = transactionsRepository.findAllByAccount_Id(accountId)
 
-    fun create(customerName: String, pinCode: String): CreateAccountResponse {
-        if (accountsRepository.existsAccountByCustomerNameAndPinCode(customerName, pinCode)) {
+    fun create(userName: String, pinCode: String): CreateAccountResponse {
+        if (accountsRepository.existsAccountByUser_NameAndPinCode(userName, pinCode)) {
             return CreateAccountResponse.AccountAlreadyExists
         }
 
+        var user = usersRepository.findByName(userName)
+        if (user == null) {
+            user = User(name = userName)
+            usersRepository.save(user)
+        }
+
         val account = Account(
-            customerName = customerName,
+            user = user,
             pinCode = pinCode,
             createdAt = Instant.now()
         )
