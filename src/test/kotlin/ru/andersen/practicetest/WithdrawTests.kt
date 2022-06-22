@@ -9,6 +9,7 @@ import ru.andersen.practicetest.models.Account
 import ru.andersen.practicetest.models.OperationType
 import ru.andersen.practicetest.models.Transaction
 import ru.andersen.practicetest.models.User
+import ru.andersen.practicetest.models.sha256
 import ru.andersen.practicetest.repositories.AccountsRepository
 import ru.andersen.practicetest.repositories.TransactionsRepository
 import ru.andersen.practicetest.services.TransactionService
@@ -24,7 +25,7 @@ class WithdrawTests {
     private val account = Account(
         id = accountId,
         user = User(name = userName),
-        pinCode = pinCode,
+        pinCode = pinCode.sha256(),
         balance = balance,
         createdAt = Instant.now()
     )
@@ -44,7 +45,7 @@ class WithdrawTests {
     @Test
     fun `withdrawn money successfully`() {
         //given
-        every { accountsRepository.findAccountByIdAndPinCode(accountId, pinCode) } returns account
+        every { accountsRepository.findAccountByIdAndPinCode(accountId, pinCode.sha256()) } returns account
         every { accountsRepository.save(any()) } returns account.copy(balance = balance.subtract(withdrawAmount))
         every { transactionsRepository.save(any()) } returns transaction
 
@@ -52,7 +53,7 @@ class WithdrawTests {
         val result: WithdrawMoneyResponse = transactionService.withdraw(accountId, pinCode, withdrawAmount)
 
         //then
-        verify(exactly = 1) { accountsRepository.findAccountByIdAndPinCode(accountId, pinCode) }
+        verify(exactly = 1) { accountsRepository.findAccountByIdAndPinCode(accountId, pinCode.sha256()) }
         verify(exactly = 1) { accountsRepository.save(any()) }
         verify(exactly = 1) { transactionsRepository.save(any()) }
 
@@ -62,13 +63,13 @@ class WithdrawTests {
     @Test
     fun `pin code invalid`() {
         //given
-        every { accountsRepository.findAccountByIdAndPinCode(accountId, pinCode) } returns null
+        every { accountsRepository.findAccountByIdAndPinCode(accountId, pinCode.sha256()) } returns null
 
         //when
         val result: WithdrawMoneyResponse = transactionService.withdraw(accountId, pinCode, withdrawAmount)
 
         //then
-        verify(exactly = 1) { accountsRepository.findAccountByIdAndPinCode(accountId, pinCode) }
+        verify(exactly = 1) { accountsRepository.findAccountByIdAndPinCode(accountId, pinCode.sha256()) }
         verify(exactly = 0) { accountsRepository.save(any()) }
         verify(exactly = 0) { transactionsRepository.save(any()) }
 
@@ -79,13 +80,13 @@ class WithdrawTests {
     fun `insufficient funds`() {
         //given
         val bigAmount = BigDecimal(1000)
-        every { accountsRepository.findAccountByIdAndPinCode(accountId, pinCode) } returns account
+        every { accountsRepository.findAccountByIdAndPinCode(accountId, pinCode.sha256()) } returns account
 
         //when
         val result: WithdrawMoneyResponse = transactionService.withdraw(accountId, pinCode, bigAmount)
 
         //then
-        verify(exactly = 1) { accountsRepository.findAccountByIdAndPinCode(accountId, pinCode) }
+        verify(exactly = 1) { accountsRepository.findAccountByIdAndPinCode(accountId, pinCode.sha256()) }
         verify(exactly = 0) { accountsRepository.save(any()) }
         verify(exactly = 0) { transactionsRepository.save(any()) }
 

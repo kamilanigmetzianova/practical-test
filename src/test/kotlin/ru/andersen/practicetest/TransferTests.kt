@@ -9,6 +9,7 @@ import ru.andersen.practicetest.models.Account
 import ru.andersen.practicetest.models.OperationType
 import ru.andersen.practicetest.models.Transaction
 import ru.andersen.practicetest.models.User
+import ru.andersen.practicetest.models.sha256
 import ru.andersen.practicetest.repositories.AccountsRepository
 import ru.andersen.practicetest.repositories.TransactionsRepository
 import ru.andersen.practicetest.services.TransactionService
@@ -18,17 +19,22 @@ import java.util.*
 
 class TransferTests {
 
+    private val senderPinCode = "0000"
+    private val senderPinCodeHash = senderPinCode.sha256()
+    private val receiverPinCode = "1111"
+    private val receiverPinCodeHash = receiverPinCode.sha256()
+
     private val senderAccount = Account(
         id = 1L,
         user = User(name = "Sender"),
-        pinCode = "0000",
+        pinCode = senderPinCodeHash,
         balance = BigDecimal(100),
         createdAt = Instant.now()
     )
     private val recipientAccount = Account(
         id = 2L,
         user = User(name = "Recipient"),
-        pinCode = "1111",
+        pinCode = receiverPinCodeHash,
         balance = BigDecimal(100),
         createdAt = Instant.now()
     )
@@ -58,12 +64,7 @@ class TransferTests {
         val updatedSender = senderAccount.copy(balance = senderAccount.balance.subtract(transferAmount))
         val updatedRecipient = recipientAccount.copy(balance = recipientAccount.balance.add(transferAmount))
 
-        every {
-            accountsRepository.findAccountByIdAndPinCode(
-                senderAccount.id,
-                senderAccount.pinCode
-            )
-        } returns senderAccount
+        every { accountsRepository.findAccountByIdAndPinCode(senderAccount.id, senderPinCodeHash) } returns senderAccount
         every { accountsRepository.findById(recipientAccount.id) } returns Optional.of(recipientAccount)
         every { accountsRepository.save(updatedSender) } returns updatedSender
         every { accountsRepository.save(updatedRecipient) } returns updatedRecipient
@@ -71,10 +72,10 @@ class TransferTests {
 
         //when
         val result: TransferMoneyResponse =
-            transactionService.transfer(senderAccount.id, recipientAccount.id, senderAccount.pinCode, transferAmount)
+            transactionService.transfer(senderAccount.id, recipientAccount.id, senderPinCode, transferAmount)
 
         //then
-        verify(exactly = 1) { accountsRepository.findAccountByIdAndPinCode(senderAccount.id, senderAccount.pinCode) }
+        verify(exactly = 1) { accountsRepository.findAccountByIdAndPinCode(senderAccount.id, senderPinCodeHash) }
         verify(exactly = 1) { accountsRepository.findById(recipientAccount.id) }
         verify(exactly = 2) { accountsRepository.save(any()) }
         verify(exactly = 2) { transactionsRepository.save(any()) }
@@ -85,14 +86,14 @@ class TransferTests {
     @Test
     fun `pin code invalid`() {
         //given
-        every { accountsRepository.findAccountByIdAndPinCode(senderAccount.id, senderAccount.pinCode) } returns null
+        every { accountsRepository.findAccountByIdAndPinCode(senderAccount.id, senderPinCodeHash) } returns null
 
         //when
         val result: TransferMoneyResponse =
-            transactionService.transfer(senderAccount.id, recipientAccount.id, senderAccount.pinCode, transferAmount)
+            transactionService.transfer(senderAccount.id, recipientAccount.id, senderPinCode, transferAmount)
 
         //then
-        verify(exactly = 1) { accountsRepository.findAccountByIdAndPinCode(senderAccount.id, senderAccount.pinCode) }
+        verify(exactly = 1) { accountsRepository.findAccountByIdAndPinCode(senderAccount.id, senderPinCodeHash) }
         verify(exactly = 0) { accountsRepository.save(any()) }
         verify(exactly = 0) { transactionsRepository.save(any()) }
 
@@ -102,20 +103,15 @@ class TransferTests {
     @Test
     fun `recipient not found`() {
         //given
-        every {
-            accountsRepository.findAccountByIdAndPinCode(
-                senderAccount.id,
-                senderAccount.pinCode
-            )
-        } returns senderAccount
+        every { accountsRepository.findAccountByIdAndPinCode(senderAccount.id, senderPinCodeHash) } returns senderAccount
         every { accountsRepository.findById(recipientAccount.id) } returns Optional.ofNullable(null)
 
         //when
         val result: TransferMoneyResponse =
-            transactionService.transfer(senderAccount.id, recipientAccount.id, senderAccount.pinCode, transferAmount)
+            transactionService.transfer(senderAccount.id, recipientAccount.id, senderPinCode, transferAmount)
 
         //then
-        verify(exactly = 1) { accountsRepository.findAccountByIdAndPinCode(senderAccount.id, senderAccount.pinCode) }
+        verify(exactly = 1) { accountsRepository.findAccountByIdAndPinCode(senderAccount.id, senderPinCodeHash) }
         verify(exactly = 1) { accountsRepository.findById(recipientAccount.id) }
         verify(exactly = 0) { accountsRepository.save(any()) }
         verify(exactly = 0) { transactionsRepository.save(any()) }
@@ -127,20 +123,15 @@ class TransferTests {
     fun `insufficient funds`() {
         //given
         val bigAmount = BigDecimal(1000)
-        every {
-            accountsRepository.findAccountByIdAndPinCode(
-                senderAccount.id,
-                senderAccount.pinCode
-            )
-        } returns senderAccount
+        every { accountsRepository.findAccountByIdAndPinCode(senderAccount.id, senderPinCodeHash) } returns senderAccount
         every { accountsRepository.findById(recipientAccount.id) } returns Optional.of(recipientAccount)
 
         //when
         val result: TransferMoneyResponse =
-            transactionService.transfer(senderAccount.id, recipientAccount.id, senderAccount.pinCode, bigAmount)
+            transactionService.transfer(senderAccount.id, recipientAccount.id, senderPinCode, bigAmount)
 
         //then
-        verify(exactly = 1) { accountsRepository.findAccountByIdAndPinCode(senderAccount.id, senderAccount.pinCode) }
+        verify(exactly = 1) { accountsRepository.findAccountByIdAndPinCode(senderAccount.id, senderPinCodeHash) }
         verify(exactly = 1) { accountsRepository.findById(recipientAccount.id) }
         verify(exactly = 0) { accountsRepository.save(any()) }
         verify(exactly = 0) { transactionsRepository.save(any()) }

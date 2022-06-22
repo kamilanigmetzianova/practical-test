@@ -6,6 +6,7 @@ import ru.andersen.practicetest.dto.transaction.TransferMoneyResponse
 import ru.andersen.practicetest.dto.transaction.WithdrawMoneyResponse
 import ru.andersen.practicetest.models.OperationType
 import ru.andersen.practicetest.models.Transaction
+import ru.andersen.practicetest.models.sha256
 import ru.andersen.practicetest.repositories.AccountsRepository
 import ru.andersen.practicetest.repositories.TransactionsRepository
 import java.math.BigDecimal
@@ -20,7 +21,7 @@ class TransactionService(
 
     @Transactional
     fun deposit(accountId: Long, pinCode: String, amount: BigDecimal): DepositMoneyResponse {
-        val account = accountsRepository.findAccountByIdAndPinCode(accountId, pinCode)
+        val account = accountsRepository.findAccountByIdAndPinCode(accountId, pinCode.sha256())
             ?: return DepositMoneyResponse.AccessDenied
 
         val updatedBalance = account.balance.add(amount)
@@ -40,7 +41,7 @@ class TransactionService(
 
     @Transactional
     fun withdraw(accountId: Long, pinCode: String, amount: BigDecimal): WithdrawMoneyResponse {
-        val account = accountsRepository.findAccountByIdAndPinCode(accountId, pinCode)
+        val account = accountsRepository.findAccountByIdAndPinCode(accountId, pinCode.sha256())
             ?: return WithdrawMoneyResponse.AccessDenied
 
         if (account.balance < amount)
@@ -68,7 +69,7 @@ class TransactionService(
         pinCode: String,
         amount: BigDecimal
     ): TransferMoneyResponse {
-        val senderAccount = accountsRepository.findAccountByIdAndPinCode(senderAccountId, pinCode)
+        val senderAccount = accountsRepository.findAccountByIdAndPinCode(senderAccountId, pinCode.sha256())
             ?: return TransferMoneyResponse.AccessDenied
 
         val recipientAccount = accountsRepository.findById(receiverAccountId).orElse(null)

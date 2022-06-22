@@ -9,6 +9,7 @@ import ru.andersen.practicetest.models.Account
 import ru.andersen.practicetest.models.OperationType
 import ru.andersen.practicetest.models.Transaction
 import ru.andersen.practicetest.models.User
+import ru.andersen.practicetest.models.sha256
 import ru.andersen.practicetest.repositories.AccountsRepository
 import ru.andersen.practicetest.repositories.TransactionsRepository
 import ru.andersen.practicetest.services.TransactionService
@@ -20,11 +21,12 @@ class DepositTests {
     private val accountId = 1L
     private val userName = "Test"
     private val pinCode = "0000"
+    private val pinCodeHash = pinCode.sha256()
     private val balance = BigDecimal(10)
     private val account = Account(
         id = accountId,
         user = User(name = userName),
-        pinCode = pinCode,
+        pinCode = pinCodeHash,
         balance = balance,
         createdAt = Instant.now()
     )
@@ -44,7 +46,7 @@ class DepositTests {
     @Test
     fun `deposited money successfully`() {
         //given
-        every { accountsRepository.findAccountByIdAndPinCode(accountId, pinCode) } returns account
+        every { accountsRepository.findAccountByIdAndPinCode(accountId, pinCodeHash) } returns account
         every { accountsRepository.save(any()) } returns account.copy(balance = balance.add(depositAmount))
         every { transactionsRepository.save(any()) } returns transaction
 
@@ -52,7 +54,7 @@ class DepositTests {
         val result: DepositMoneyResponse = transactionService.deposit(accountId, pinCode, depositAmount)
 
         //then
-        verify(exactly = 1) { accountsRepository.findAccountByIdAndPinCode(accountId, pinCode) }
+        verify(exactly = 1) { accountsRepository.findAccountByIdAndPinCode(accountId, pinCodeHash) }
         verify(exactly = 1) { accountsRepository.save(any()) }
         verify(exactly = 1) { transactionsRepository.save(any()) }
 
@@ -62,13 +64,13 @@ class DepositTests {
     @Test
     fun `pin code invalid`() {
         //given
-        every { accountsRepository.findAccountByIdAndPinCode(accountId, pinCode) } returns null
+        every { accountsRepository.findAccountByIdAndPinCode(accountId, pinCodeHash) } returns null
 
         //when
         val result: DepositMoneyResponse = transactionService.deposit(accountId, pinCode, depositAmount)
 
         //then
-        verify(exactly = 1) { accountsRepository.findAccountByIdAndPinCode(accountId, pinCode) }
+        verify(exactly = 1) { accountsRepository.findAccountByIdAndPinCode(accountId, pinCodeHash) }
         verify(exactly = 0) { accountsRepository.save(any()) }
         verify(exactly = 0) { transactionsRepository.save(any()) }
 

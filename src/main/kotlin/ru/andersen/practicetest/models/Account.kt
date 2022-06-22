@@ -1,6 +1,7 @@
 package ru.andersen.practicetest.models
 
 import java.math.BigDecimal
+import java.security.MessageDigest
 import java.time.Instant
 import javax.persistence.CascadeType
 import javax.persistence.Entity
@@ -24,3 +25,6 @@ data class Account(
     @OneToMany(mappedBy = "account", cascade = [CascadeType.ALL], fetch = FetchType.LAZY)
     val transactions: List<Transaction>? = null
 )
+
+fun String.sha256() = MessageDigest.getInstance("SHA-256").digest(this.toByteArray(Charsets.UTF_8))
+    .joinToString("") { "%02x".format(it) }

@@ -5,6 +5,7 @@ import ru.andersen.practicetest.dto.account.CreateAccountResponse
 import ru.andersen.practicetest.models.Account
 import ru.andersen.practicetest.models.Transaction
 import ru.andersen.practicetest.models.User
+import ru.andersen.practicetest.models.sha256
 import ru.andersen.practicetest.repositories.AccountsRepository
 import ru.andersen.practicetest.repositories.TransactionsRepository
 import ru.andersen.practicetest.repositories.UsersRepository
@@ -37,7 +38,7 @@ class AccountService(
 
         val account = Account(
             user = user,
-            pinCode = pinCode,
+            pinCode = pinCode.sha256(),
             createdAt = Instant.now()
         )
         accountsRepository.save(account)
