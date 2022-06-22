@@ -23,14 +23,14 @@ name
 **accounts**  
 id  
 account_number  
-beneficiary  
-pin_code
+beneficiary_id  
+pin_code  
 balance  
 created_at
 
 **transactions**  
 id  
-account   
+account_id   
 type  
 balanceBefore  
 balanceAfter  
@@ -46,6 +46,6 @@ created_at
 - POST **/api/transaction/transfer** - transfer money from one account to another (could be replaced by combination of deposit and withdraw operations, but decided to go a separate way for ability of further expansion)
 
 Visit Swagger for more detailed API description (link http://localhost:8080/swagger-ui.html). You can interact with API using Swagger HTTP requests.  
-Data storage filled with initial beneficiaries, accounts and transactions. Default PinCode is **1111**.
+Data storage filled with initial beneficiaries, accounts and transactions. Default pinCode is **1111**.
 
 
