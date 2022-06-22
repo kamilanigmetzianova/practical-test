@@ -32,9 +32,10 @@ class TransactionService(
             }
 
         val updatedBalance = account.balance + amount
+        val transaction = createTransaction(account, OperationType.DEPOSIT, updatedBalance)
 
         accountsRepository.save(account.copy(balance = updatedBalance))
-        saveTransaction(account, OperationType.DEPOSIT, updatedBalance)
+        transactionsRepository.save(transaction)
 
         return DepositMoneyResponse.Ok
     }
@@ -53,9 +54,10 @@ class TransactionService(
         }
 
         val updatedBalance = account.balance - amount
+        val transaction = createTransaction(account, OperationType.DEPOSIT, updatedBalance)
 
         accountsRepository.save(account.copy(balance = updatedBalance))
-        saveTransaction(account, OperationType.WITHDRAW, updatedBalance)
+        transactionsRepository.save(transaction)
 
         return WithdrawMoneyResponse.Ok
     }
@@ -84,27 +86,26 @@ class TransactionService(
             return TransferMoneyResponse.InsufficientFunds
         }
 
-        val senderBalance = recipientAccount.balance - amount
-        val recipientBalance = recipientAccount.balance + amount
-
+        val senderBalance = senderAccount.balance - amount
+        val senderTransaction = createTransaction(senderAccount, OperationType.TRANSFER, senderBalance)
         accountsRepository.save(senderAccount.copy(balance = senderBalance))
-        saveTransaction(senderAccount, OperationType.TRANSFER, senderBalance)
+        transactionsRepository.save(senderTransaction)
 
+        val recipientBalance = recipientAccount.balance + amount
+        val recipientTransaction = createTransaction(recipientAccount, OperationType.DEPOSIT, recipientBalance)
         accountsRepository.save(recipientAccount.copy(balance = recipientBalance))
-        saveTransaction(recipientAccount, OperationType.DEPOSIT, recipientBalance)
+        transactionsRepository.save(recipientTransaction)
 
         return TransferMoneyResponse.Ok
     }
 
-    private fun saveTransaction(account: Account, type: OperationType, updatedBalance: BigDecimal) {
-        val transaction = Transaction(
+    private fun createTransaction(account: Account, type: OperationType, updatedBalance: BigDecimal): Transaction {
+        return Transaction(
             account = account,
             type = type,
             balanceBefore = account.balance,
             balanceAfter = updatedBalance,
             createdAt = Instant.now()
         )
-        transactionsRepository.save(transaction)
-        log.info("New transaction saved $transaction")
     }
 }

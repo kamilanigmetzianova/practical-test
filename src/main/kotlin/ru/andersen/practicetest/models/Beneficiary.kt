@@ -7,15 +7,13 @@ import javax.persistence.GeneratedValue
 import javax.persistence.GenerationType
 import javax.persistence.Id
 import javax.persistence.OneToMany
-import javax.persistence.Table
 
 @Entity
-@Table(name="beneficiary")
-data class User(
+data class Beneficiary(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    val id: Long = 0,
+    val id: Long = 0, // or uuid
     val name: String,
-    @OneToMany(mappedBy = "user", cascade = [CascadeType.ALL], fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "beneficiary", cascade = [CascadeType.ALL], fetch = FetchType.LAZY)
     val accounts: List<Account>? = null,
 )

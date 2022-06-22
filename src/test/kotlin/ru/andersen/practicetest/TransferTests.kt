@@ -8,7 +8,7 @@ import ru.andersen.practicetest.dto.transaction.TransferMoneyResponse
 import ru.andersen.practicetest.models.Account
 import ru.andersen.practicetest.models.OperationType
 import ru.andersen.practicetest.models.Transaction
-import ru.andersen.practicetest.models.User
+import ru.andersen.practicetest.models.Beneficiary
 import ru.andersen.practicetest.models.sha256
 import ru.andersen.practicetest.repositories.AccountsRepository
 import ru.andersen.practicetest.repositories.TransactionsRepository
@@ -26,14 +26,14 @@ class TransferTests {
 
     private val senderAccount = Account(
         id = 1L,
-        user = User(name = "Sender"),
+        beneficiary = Beneficiary(name = "Sender"),
         pinCode = senderPinCodeHash,
         balance = BigDecimal(100),
         createdAt = Instant.now()
     )
     private val recipientAccount = Account(
         id = 2L,
-        user = User(name = "Recipient"),
+        beneficiary = Beneficiary(name = "Recipient"),
         pinCode = receiverPinCodeHash,
         balance = BigDecimal(100),
         createdAt = Instant.now()

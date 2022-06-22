@@ -31,7 +31,7 @@ class AccountController(private val accountService: AccountService) {
         ]
     )
     fun fetchAll(): ResponseEntity<List<AccountInfo>> {
-        val list = accountService.fetchAll().map { AccountInfo(it.user.name, it.balance) }
+        val list = accountService.fetchAll().map { AccountInfo(it.beneficiary.name, it.balance) }
         return ResponseEntity.ok(list)
     }
 
@@ -55,13 +55,11 @@ class AccountController(private val accountService: AccountService) {
         responses = [
             ApiResponse(responseCode = "200", description = "Account created"),
             ApiResponse(responseCode = "400", description = "Request payload has incorrect format"),
-            ApiResponse(responseCode = "409", description = "Such account already exists"),
         ]
     )
     fun create(@Valid @RequestBody request: CreateAccountRequest): ResponseEntity<Unit> {
-        return when (accountService.create(request.userName!!, request.pinCode!!)) {
+        return when (accountService.create(request.beneficiaryName!!, request.pinCode!!)) {
             CreateAccountResponse.Ok -> ResponseEntity.ok().build()
-            CreateAccountResponse.AccountAlreadyExists -> ResponseEntity.status(HttpStatus.CONFLICT).build()
         }
     }
 

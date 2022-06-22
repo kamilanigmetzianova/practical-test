@@ -5,16 +5,16 @@ import org.springframework.stereotype.Service
 import ru.andersen.practicetest.dto.account.CreateAccountResponse
 import ru.andersen.practicetest.models.Account
 import ru.andersen.practicetest.models.Transaction
-import ru.andersen.practicetest.models.User
+import ru.andersen.practicetest.models.Beneficiary
 import ru.andersen.practicetest.models.sha256
 import ru.andersen.practicetest.repositories.AccountsRepository
 import ru.andersen.practicetest.repositories.TransactionsRepository
-import ru.andersen.practicetest.repositories.UsersRepository
+import ru.andersen.practicetest.repositories.BeneficiariesRepository
 import java.time.Instant
 
 @Service
 class AccountService(
-    private val usersRepository: UsersRepository,
+    private val beneficiariesRepository: BeneficiariesRepository,
     private val accountsRepository: AccountsRepository,
     private val transactionsRepository: TransactionsRepository
 ) {
@@ -25,26 +25,21 @@ class AccountService(
 
     fun fetchTransactions(accountId: Long): List<Transaction> = transactionsRepository.findAllByAccount_Id(accountId)
 
-    fun create(userName: String, pinCode: String): CreateAccountResponse {
-        if (accountsRepository.existsAccountByUser_NameAndPinCode(userName, pinCode)) {
-            log.info("Error in account creation: account already exists")
-            return CreateAccountResponse.AccountAlreadyExists
-        }
-
-        var user = usersRepository.findByName(userName)
-        if (user == null) {
-            user = User(name = userName)
-            usersRepository.save(user)
-            log.info("New user created $user")
+    fun create(beneficiaryName: String, pinCode: String): CreateAccountResponse {
+        var beneficiary = beneficiariesRepository.findByName(beneficiaryName)
+        if (beneficiary == null) {
+            beneficiary = Beneficiary(name = beneficiaryName)
+            beneficiariesRepository.save(beneficiary)
+            log.info("New beneficiary created, id=${beneficiary.id}")
         }
 
         val account = Account(
-            user = user,
+            beneficiary = beneficiary,
             pinCode = pinCode.sha256(),
             createdAt = Instant.now()
         )
         accountsRepository.save(account)
-        log.info("New account created $account")
+        log.info("New account created, id=${account.id}")
         return CreateAccountResponse.Ok
     }
 

@@ -1,5 +1,6 @@
 package ru.andersen.practicetest.models
 
+import org.apache.commons.lang3.RandomStringUtils
 import java.math.BigDecimal
 import java.security.MessageDigest
 import java.time.Instant
@@ -18,7 +19,8 @@ data class Account(
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     val id: Long = 0,
     @ManyToOne
-    val user: User,
+    val beneficiary: Beneficiary,
+    val accountNumber: String = RandomStringUtils.randomNumeric(16),
     val pinCode: String,
     val balance: BigDecimal = BigDecimal(0),
     val createdAt: Instant,

@@ -16,14 +16,14 @@ The system has moduled structure, including api, service and data layers.
 
 ### Database:
 
-**users**  
+**beneficiaries**  
 id  
 name
 
 **accounts**  
 id  
 account_number  
-user  
+beneficiary  
 pin_code
 balance  
 created_at
@@ -45,6 +45,7 @@ created_at
 - POST **/api/transaction/withdraw** - withdraw money 
 - POST **/api/transaction/transfer** - transfer money from one account to another (could be replaced by combination of deposit and withdraw operations, but decided to go a separate way for ability of further expansion)
 
-Visit Swagger for more detailed API description (link http://localhost:8080/swagger-ui.html). You can interact with API using Swagger HTTP requests.
+Visit Swagger for more detailed API description (link http://localhost:8080/swagger-ui.html). You can interact with API using Swagger HTTP requests.  
+Data storage filled with initial beneficiaries, accounts and transactions. Default PinCode is **1111**.
 
 

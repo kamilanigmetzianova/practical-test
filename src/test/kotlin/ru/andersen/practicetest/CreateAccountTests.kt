@@ -6,55 +6,38 @@ import io.mockk.verify
 import org.junit.jupiter.api.Test
 import ru.andersen.practicetest.dto.account.CreateAccountResponse
 import ru.andersen.practicetest.models.Account
-import ru.andersen.practicetest.models.User
+import ru.andersen.practicetest.models.Beneficiary
 import ru.andersen.practicetest.repositories.AccountsRepository
 import ru.andersen.practicetest.repositories.TransactionsRepository
-import ru.andersen.practicetest.repositories.UsersRepository
+import ru.andersen.practicetest.repositories.BeneficiariesRepository
 import ru.andersen.practicetest.services.AccountService
 import java.time.Instant
 
 class CreateAccountTests {
 
-    private val userName = "Test"
+    private val beneficiaryName = "Test"
     private val pinCode = "0000"
-    private val account = Account(user = User(name = userName), pinCode = pinCode, createdAt = Instant.now())
+    private val account = Account(beneficiary = Beneficiary(name = beneficiaryName), pinCode = pinCode, createdAt = Instant.now())
 
-    private val usersRepository: UsersRepository = mockk()
+    private val beneficiariesRepository: BeneficiariesRepository = mockk()
     private val accountsRepository: AccountsRepository = mockk()
     private val transactionsRepository: TransactionsRepository = mockk()
-    private val accountService = AccountService(usersRepository, accountsRepository, transactionsRepository)
+    private val accountService = AccountService(beneficiariesRepository, accountsRepository, transactionsRepository)
 
     @Test
     fun `account was created successfully`() {
         //given
-        every { usersRepository.findByName(userName) } returns User(name = userName)
-        every { accountsRepository.existsAccountByUser_NameAndPinCode(userName, pinCode) } returns false
+        every { beneficiariesRepository.findByName(beneficiaryName) } returns Beneficiary(name = beneficiaryName)
         every { accountsRepository.save(any()) } returns account
 
         //when
-        val result: CreateAccountResponse = accountService.create(userName, pinCode)
+        val result: CreateAccountResponse = accountService.create(beneficiaryName, pinCode)
 
         //then
-        verify(exactly = 1) { usersRepository.findByName(userName) }
-        verify(exactly = 1) { accountsRepository.existsAccountByUser_NameAndPinCode(userName, pinCode) }
+        verify(exactly = 1) { beneficiariesRepository.findByName(beneficiaryName) }
         verify(exactly = 1) { accountsRepository.save(any()) }
 
         assert(result is CreateAccountResponse.Ok)
-    }
-
-    @Test
-    fun `such account already exists`() {
-        //given
-        every { accountsRepository.existsAccountByUser_NameAndPinCode(userName, pinCode) } returns true
-
-        //when
-        val result: CreateAccountResponse = accountService.create(userName, pinCode)
-
-        //then
-        verify(exactly = 1) { accountsRepository.existsAccountByUser_NameAndPinCode(userName, pinCode) }
-        verify(exactly = 0) { accountsRepository.save(any()) }
-
-        assert(result is CreateAccountResponse.AccountAlreadyExists)
     }
 
 }

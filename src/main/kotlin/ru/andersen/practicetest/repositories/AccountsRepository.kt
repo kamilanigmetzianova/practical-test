@@ -6,9 +6,6 @@ import ru.andersen.practicetest.models.Account
 import javax.persistence.LockModeType
 
 interface AccountsRepository : JpaRepository<Account, Long> {
-
-    fun existsAccountByUser_NameAndPinCode(name: String, pinCode: String): Boolean
-
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     fun findAccountByIdAndPinCode(id: Long, pinCode: String): Account?
 }
